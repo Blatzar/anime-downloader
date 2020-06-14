@@ -96,6 +96,18 @@ ALL_EXTRACTORS = [
         'modulename': 'streamx',
         'regex': 'streamx',
         'class': 'StreamX'
+    },
+    {
+        'sitename': 'yify',
+        'modulename': 'yify',
+        'regex': 'yify',
+        'class': 'Yify'
+    },
+    {
+        'sitename': 'mixdrop',
+        'modulename': 'mixdrop',
+        'regex': 'mixdrop',
+        'class': 'Mixdrop'
     }
 ]
 
