@@ -75,7 +75,7 @@ class VidStream(BaseExtractor):
         }
 
         """
-        Elaborate if statements to get sources_json["source"]["file"]
+        Elaborate if statements to get sources_json["source"][0]["file"]
         based on order in config.
         """
 
