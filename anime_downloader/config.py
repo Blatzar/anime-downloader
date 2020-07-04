@@ -105,7 +105,11 @@ DEFAULT_CONFIG = {
                 "ptserver"
             ]
         },
-
+        'voiranime': {
+            "servers":[
+                "gounlimited"
+            ]
+        },
     }
 }
 
