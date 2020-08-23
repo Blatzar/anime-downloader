@@ -5,6 +5,8 @@ from anime_downloader.config import Config
 from anime_downloader.extractors.base_extractor import BaseExtractor
 import anime_downloader.extractors as extractors
 from anime_downloader.sites import helpers
+from anime_downloader.util import get_final_url
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +35,7 @@ class VidStream(BaseExtractor):
 
         """Dirty, but self.config isn't supported for extractors."""
         servers = Config._read_config()['siteconfig']['vidstream']['servers']
+        skip_m3u8 = Config._read_config()['siteconfig']['vidstream']['skip_m3u8']
 
         for i in servers:
             """
@@ -40,7 +43,11 @@ class VidStream(BaseExtractor):
             use a different layout for their own videos
             """
             if 'vidstream' in i and 'vidstream' in self.url:
-                return self._get_link(soup)
+                extracted = self._get_link(soup)
+                check = self.check_m3u8(extracted, skip_m3u8)
+                if check:
+                    return check
+
             for j in linkserver:
                 if j.get('data-video').startswith(links.get(i,'None')):
                     """
@@ -51,17 +58,39 @@ class VidStream(BaseExtractor):
                     info['url'] = j.get('data-video')
                     _self = Extractor(info)
                     """Gives away the link to another extractor"""
-                    return extractors.get_extractor(i)._get_data(_self)
+                    extracted = extractors.get_extractor(i)._get_data(_self)
+                    check = self.check_m3u8(extracted, skip_m3u8)
+                    if check:
+                        return check
+
+
+    def check_m3u8(self, extracted, skip_m3u8):
+        logger.debug('Extracted: {}'.format(extracted))
+        if extracted['stream_url']:
+            finalurl = get_final_url(extracted['stream_url'], referer=extracted.get('referer', extracted['stream_url']))
+            logger.debug('Final url: {}'.format(finalurl))
+            parsed_url = urlparse(finalurl)
+            # If m3u8skip is enabled and the url ends with m3u8 it'll continue to other extractors.
+            if not (skip_m3u8 and parsed_url.path.endswith('m3u8')):
+                return extracted
 
 
     def _get_link(self,soup):
-        """
-        Matches something like
-        f("MTE2MDIw&title=Yakusoku+no+Neverland");
-        """
-        sources_regex = r'>\s*?f\("(.*?)"\);'
-        sources_url = re.search(sources_regex,str(soup)).group(1)
-        sources_json = helpers.get(f'https://vidstreaming.io/ajax.php?id={sources_url}', referer=self.url).json()
+
+        # Gets:
+        # <input type="hidden" id="id" value="MTEyMzg1">
+        # <input type="hidden" id="title" value="Yakusoku+no+Neverland">
+        # <input type="hidden" id="typesub" value="SUB">
+        # Used to create a download url.
+        soup_id = soup.select('input#id')[0]['value']
+        soup_title = soup.select('input#title')[0]['value']
+        soup_typesub = soup.select('input#typesub')[0].get('value','SUB')
+
+        sources_json = helpers.get(f'https://vidstreaming.io/ajax.php', params = {
+            'id':soup_id,
+            'typesub':soup_typesub,
+            'title':soup_title,
+            }, referer=self.url).json()
 
         logger.debug('Sources json: {}'.format(str(sources_json)))
         """
@@ -80,7 +109,7 @@ class VidStream(BaseExtractor):
         """
 
         servers = Config._read_config()['siteconfig']['vidstream']['servers']
-        print(sources_json["source"][0]["file"])
+
         for i in servers:
             if i in sources_keys:
                 if sources_keys[i] in sources_json:
