@@ -113,7 +113,8 @@ DEFAULT_CONFIG = {
         },
         'vidstream': {
             'servers': ['vidstream','vidstream_bk','gcloud','mp4upload','cloud9','hydrax','mixdrop'],
-            'version': 'subbed'
+            'version': 'subbed',
+            'skip_m3u8':True
         },
         'justdubs': {
             'servers': ['mp4upload','gcloud']
