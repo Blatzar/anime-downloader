@@ -15,14 +15,17 @@ import coloredlogs
 import pickle
 import tempfile
 import requests
+import ssl
+import base64
 from tabulate import tabulate
 from uuid import uuid4
 from secrets import choice
 from urllib.parse import urlparse
+from urllib import request
 
 from anime_downloader import session
 from anime_downloader.sites import get_anime_class, helpers
-from anime_downloader.const import desktop_headers
+from anime_downloader.const import desktop_headers, get_random_header
 
 logger = logging.getLogger(__name__)
 
@@ -243,6 +246,29 @@ def get_json(url, params=None):
     return data
 
 
+def get_final_url(url, referer=None, headers={}):
+    # This gets the redirect page without downloading anything.
+    # helpers can be user but there's a risk of the page being an actual .mp4
+    # in that case it'd 'freeze' while downloading the page.
+    # Using urllib it won't download any video files.
+
+    # No ssl errors.
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+    req = request.Request(url)
+    if referer:
+        req.add_header('Referer', referer)
+    req.add_header('user-agent', get_random_header()['user-agent'])
+    for key, value in headers:
+        req.add_header(key, value)
+    res = request.urlopen(req, context=ctx)
+    finalurl = res.geturl()
+
+    return finalurl
+
+
 def slugify(file_name):
     file_name = str(file_name).strip().replace(' ', '_')
     return re.sub(r'(?u)[^-\w.]', '', file_name)
@@ -391,10 +417,15 @@ def get_hcaptcha_cookies(url):
 def deobfuscate_packed_js(packedjs):
     return eval_in_node('eval=console.log; ' + packedjs)
 
-
 def eval_in_node(js: str):
-    # TODO: This should be in util
-    output = subprocess.check_output(['node', '-e', js])
+    js = base64.b64encode(js.encode('utf-8')).decode()
+    sandboxedScript ="""
+                    const {VM} = require('vm2');
+                    const js = Buffer.from('%s','base64').toString()
+                    console.log(new VM().run(js))
+                    """%js
+    node_path = os.path.join(os.path.dirname(__file__), 'node_modules')
+    output = subprocess.check_output(['node', '-e', sandboxedScript], env={'NODE_PATH': node_path})
     return output.decode('utf-8')
 
 def open_magnet(magnet):
