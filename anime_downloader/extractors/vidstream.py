@@ -102,8 +102,9 @@ class VidStream(BaseExtractor):
         return {'stream_url': ''}
 
 
-class Extractor: 
+class Extractor:
     """dummy class to prevent changing self"""
+
     def __init__(self, dictionary):
         for k, v in dictionary.items():
             setattr(self, k, v)

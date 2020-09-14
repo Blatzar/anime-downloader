@@ -1,6 +1,8 @@
 from anime_downloader.extractors.base_extractor import BaseExtractor
 from anime_downloader.sites import helpers
 import urllib.parse
+
+
 class AnimeOnline360(BaseExtractor):
     def _get_data(self):
         try:
@@ -17,5 +19,5 @@ class AnimeOnline360(BaseExtractor):
                 'stream_url': stream_url,
                 'referer': referrer
             }
-        except:
+        except BaseException:
             return {"stream_url": ''}

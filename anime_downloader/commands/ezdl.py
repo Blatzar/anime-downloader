@@ -144,7 +144,7 @@ def command(ctx, anime_url, episode_range, player,
                             fallback_qualities=fallback_qualities)
             # I have yet to investigate all errors this can output
             # No sources found gives error which exits the script
-            except:
+            except BaseException:
                 continue
 
             logger.debug('Found anime: {}'.format(anime.title))
@@ -154,7 +154,7 @@ def command(ctx, anime_url, episode_range, player,
             except RuntimeError:
                 logger.error('No episode found with index {}'.format(episode_range))
                 continue
-            except:
+            except BaseException:
                 logger.error('Unknown provider error')
                 continue
 

@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 def get_data_dir():
     '''
-    Gets the folder directory selescrape will store data, 
+    Gets the folder directory selescrape will store data,
     such as cookies or browser extensions and logs.
     '''
     APP_NAME = 'anime downloader'
@@ -40,14 +40,14 @@ def get_browser_config():
     '''
     Decides what browser selescrape will use.
     '''
-    os_browser = { #maps os to a browser
-    'linux':'firefox',
-    'darwin':'chrome',
-    'win32':'chrome'
+    os_browser = {  # maps os to a browser
+        'linux': 'firefox',
+        'darwin': 'chrome',
+        'win32': 'chrome'
     }
     for a in os_browser:
         if platform.startswith(a):
-            browser =  os_browser[a]
+            browser = os_browser[a]
         else:
             browser = 'chrome'
     value = data['dl']['selescrape_browser']
@@ -73,10 +73,10 @@ def add_url_params(url, params):
     return url if not params else url + '?' + urlencode(params)
 
 
-def driver_select(): #
+def driver_select():
     '''
-    it configures what each browser should do 
-    and gives the driver variable that is used 
+    it configures what each browser should do
+    and gives the driver variable that is used
     to perform any actions below this function.
     '''
     browser = get_browser_config()
@@ -88,12 +88,12 @@ def driver_select(): #
         fireFoxOptions = webdriver.FirefoxOptions()
         fireFoxOptions.headless = True
         fireFoxOptions.add_argument('--log fatal')
-        if binary == None:  
+        if binary is None:
             driver = webdriver.Firefox(options=fireFoxOptions, service_log_path=os.path.devnull)
         else:
             try:
                 driver = webdriver.Firefox(options=fireFoxOptions, service_log_path=os.path.devnull)
-            except:
+            except BaseException:
                 driver = webdriver.Firefox(executable_path=binary, options=fireFoxOptions, service_log_path=os.path.devnull)
     elif browser == 'chrome':
         from selenium.webdriver.chrome.options import Options
@@ -107,8 +107,8 @@ def driver_select(): #
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--window-size=1920,1080")
         chrome_options.add_argument(f'user-agent={get_random_header()}')
-        if binary == None:
-            if executable == None:
+        if binary is None:
+            if executable is None:
                 driver = webdriver.Chrome(options=chrome_options)
             else:
                 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -116,7 +116,7 @@ def driver_select(): #
                 cap['binary_location'] = executable
                 driver = webdriver.Chrome(desired_capabilities=cap, options=chrome_options)
         else:
-            if executable == None:
+            if executable is None:
                 driver = webdriver.Chrome(options=chrome_options)
             else:
                 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -128,7 +128,7 @@ def driver_select(): #
 
 def status_select(driver, url, status='hide'):
     '''
-    For now it doesnt do what its name suggests, 
+    For now it doesnt do what its name suggests,
     I have planned to add a status reporter of the http response code.
     This part of the code is not removed because it is part of its core.
     Treat it like it isnt here.
@@ -151,12 +151,12 @@ def status_select(driver, url, status='hide'):
 def cloudflare_wait(driver):
     '''
     It waits until cloudflare has gone away before doing any further actions.
-    The way it works is by getting the title of the page 
+    The way it works is by getting the title of the page
     and as long as it is "Just a moment..." it will keep waiting.
-    This part of the code won't make the code execute slower 
+    This part of the code won't make the code execute slower
     if the target website has not a Cloudflare redirection.
-    At most it will sleep 1 second as a precaution. 
-    Also, i have made it time out after 30 seconds, useful if the target website is not responsive 
+    At most it will sleep 1 second as a precaution.
+    Also, i have made it time out after 30 seconds, useful if the target website is not responsive
     and to stop it from running infinitely.
     '''
     abort_after = 30
@@ -172,23 +172,23 @@ def cloudflare_wait(driver):
         title = driver.title
         if not title == "Just a moment...":
             break
-    time.sleep(1) # This is necessary to make sure everything has loaded fine.
+    time.sleep(1)  # This is necessary to make sure everything has loaded fine.
 
 
-def request(request_type, url, **kwargs): #Headers not yet supported , headers={}
+def request(request_type, url, **kwargs):  # Headers not yet supported , headers={}
     params = kwargs.get('params', {})
     new_url = add_url_params(url, params)
     driver = driver_select()
     status = status_select(driver, new_url, 'hide')
     try:
         cloudflare_wait(driver)
-        user_agent = driver.execute_script("return navigator.userAgent;") #dirty, but allows for all sorts of things above
+        user_agent = driver.execute_script("return navigator.userAgent;")  # dirty, but allows for all sorts of things above
         cookies = driver.get_cookies()
         text = driver.page_source
         driver.close()
         return SeleResponse(url, request_type, text, cookies, user_agent)
-    except:
-        driver.save_screenshot(f"{get_data_dir()}/screenshot.png");
+    except BaseException:
+        driver.save_screenshot(f"{get_data_dir()}/screenshot.png")
         driver.close()
         logger.error(f'There was a problem getting the page: {new_url}. \
         See the screenshot for more info:\n{get_data_dir()}/screenshot.png')
@@ -211,6 +211,7 @@ class SeleResponse:
     user_agent: string
         User agent used on the webpage
     """
+
     def __init__(self, url, method, text, cookies, user_agent):
         self.url = url
         self.method = method

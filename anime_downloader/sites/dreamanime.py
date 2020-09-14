@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class DreamAnime(Anime, sitename='dreamanime'):
     """
     Site: http://dreamanime.fun
@@ -18,20 +19,20 @@ class DreamAnime(Anime, sitename='dreamanime'):
         Selects the server to download from.
     """
 
-    sitename='dreamanime'
+    sitename = 'dreamanime'
 
     @classmethod
     def search(cls, query):
-        soup = helpers.soupify(helpers.get("https://dreamanime.fun/search", params = {"term" : query}))
+        soup = helpers.soupify(helpers.get("https://dreamanime.fun/search", params={"term": query}))
         result_data = soup.select("a#epilink")
 
         search_results = [
             SearchResult(
-                title = result.text,
-                url = result.get("href")
-                )
+                title=result.text,
+                url=result.get("href")
+            )
             for result in result_data
-            ]
+        ]
 
         return search_results
 
@@ -40,15 +41,15 @@ class DreamAnime(Anime, sitename='dreamanime'):
         soup = helpers.soupify(helpers.get(self.url))
 
         episodes = []
- 
+
         _all = soup.select("div.episode-wrap")
         for i in _all:
-            ep_type = i.find("div", {"class":re.compile("ep-type type-.* dscd")}).text
+            ep_type = i.find("div", {"class": re.compile("ep-type type-.* dscd")}).text
             if ep_type == 'Sub':
                 episodes.append(i.find("a").get("data-src"))
             elif ep_type == 'Dub':
                 episodes.append(i.find("a").get("href"))
-        
+
         if len(episodes) == 0:
             logger.warning("No episodes found")
 
@@ -56,7 +57,8 @@ class DreamAnime(Anime, sitename='dreamanime'):
 
     def _scrape_metadata(self):
         soup = helpers.soupify(helpers.get(self.url))
-        self.title = soup.find("div", {"class":"contingo"}).find("p").text
+        self.title = soup.find("div", {"class": "contingo"}).find("p").text
+
 
 class DreamAnimeEpisode(AnimeEpisode, sitename='dreamanime'):
     def getLink(self, name, _id):
@@ -70,7 +72,7 @@ class DreamAnimeEpisode(AnimeEpisode, sitename='dreamanime'):
     def _get_sources(self):
         server = self.config.get("server", "trollvid")
         resp = helpers.get(self.url).text
-        hosts = json.loads(re.search("var\s+episode\s+=\s+({.*})", resp).group(1))["videos"]
+        hosts = json.loads(re.search(r"var\s+episode\s+=\s+({.*})", resp).group(1))["videos"]
         _type = hosts[0]["type"]
         try:
             host = list(filter(lambda video: video["host"] == server and video["type"] == _type, hosts))[0]
