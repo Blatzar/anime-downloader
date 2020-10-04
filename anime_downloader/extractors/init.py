@@ -146,6 +146,12 @@ ALL_EXTRACTORS = [
         'class': 'Vudeo'
     },
     {
+        'sitename': 'ezlink',
+        'modulename': 'ezlink',
+        'regex': 'ezlink',
+        'class': 'Ezlink'
+    },
+    {
         'sitename': 'streamtape',
         'modulename': 'streamtape',
         'regex': 'streamtape',

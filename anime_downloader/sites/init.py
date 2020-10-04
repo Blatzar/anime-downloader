@@ -23,6 +23,8 @@ ALL_ANIME_SITES = [
     ('darkanime', 'darkanime', 'DarkAnime'),
     ('dbanimes', 'dbanimes', 'DBAnimes'),
     # ('erairaws', 'erai-raws', 'EraiRaws'),
+    ('gogoanime', 'gogoanime', 'GogoAnime'),
+    ('horriblesubs', 'horriblesubs', 'HorribleSubs'),
     ('fastani', 'fastani', 'FastAni'),
     ('itsaturday', 'itsaturday', 'Itsaturday'),
     ('justdubs', 'justdubs', 'JustDubs'),
@@ -31,6 +33,7 @@ ALL_ANIME_SITES = [
     ('kisscartoon', 'kisscartoon', 'KissCartoon'),
     ('nyaa', 'nyaa', 'Nyaa'),
     ('ryuanime', 'ryuanime', 'RyuAnime'),
+    ('topmovies', 'topmovies', 'TopMovies')
     ('twistmoe', 'twist.moe', 'TwistMoe'),
     ('tenshimoe', 'tenshi.moe', 'TenshiMoe'),
     ('vidstream', 'vidstream', 'VidStream'),
